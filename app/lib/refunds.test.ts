@@ -16,8 +16,6 @@ function facts(overrides: Partial<RefundFacts> = {}): RefundFacts {
   return {
     purchasedAt,
     amountPaid: 4900,
-    listPrice: 9900,
-    country: "US",
     hasOpenRequest: false,
     isClaimedTeamSeat: false,
     lessonCount: 10,
@@ -115,6 +113,17 @@ describe("evaluateRefundEligibility", () => {
         )
       ).toEqual({ eligible: false, reason: "too_much_watched" });
     });
+  });
+
+  it("refunds what the learner paid", () => {
+    // A coupon or a purchasing-power price can put this below the course's
+    // list price. The list price used to be refunded instead, giving back
+    // money the learner never paid.
+    const result = evaluateRefundEligibility(
+      facts({ amountPaid: 4900 }),
+      dayAfterPurchase
+    );
+    expect(result).toMatchObject({ eligible: true, amount: 4900 });
   });
 
   it("is not eligible while a Refund Request is already open", () => {

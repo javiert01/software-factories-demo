@@ -106,7 +106,7 @@ export async function action({ params, request }: Route.ActionArgs) {
     throw data("User not found", { status: 404 });
   }
 
-  const refund = getRefundEligibility(currentUserId, course);
+  const refund = getRefundEligibility(currentUserId, course.id);
 
   if (!refund) {
     throw data("You have not bought this course.", { status: 403 });

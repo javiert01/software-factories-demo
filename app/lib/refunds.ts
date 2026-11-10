@@ -1,5 +1,3 @@
-import { getDiscountForCountry } from "~/lib/ppp";
-
 // ─── Refund Eligibility ───
 // The one place that decides whether a learner may raise a Refund Request,
 // and what the Refund would be worth. See GLOSSARY.md for the terms.
@@ -12,8 +10,6 @@ export const REFUND_COMPLETION_LIMIT = 0.5;
 export type RefundFacts = {
   purchasedAt: string;
   amountPaid: number;
-  listPrice: number;
-  country: string | null;
   hasOpenRequest: boolean;
   isClaimedTeamSeat: boolean;
   lessonCount: number;
@@ -39,14 +35,6 @@ function calendarDay(when: Date): string {
   const month = String(when.getMonth() + 1).padStart(2, "0");
   const day = String(when.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-function refundAmount(facts: RefundFacts): number {
-  // A purchasing-power price is given back at the price that was paid, not
-  // at the list price of the course.
-  return getDiscountForCountry(facts.country) > 0
-    ? facts.amountPaid
-    : facts.listPrice;
 }
 
 export function evaluateRefundEligibility(
@@ -80,5 +68,7 @@ export function evaluateRefundEligibility(
     return { eligible: false, reason: "too_much_watched" };
   }
 
-  return { eligible: true, amount: refundAmount(facts), lastDayInWindow };
+  // A Refund is always what the learner actually paid — never the list
+  // price, which a coupon or a purchasing-power price may have lowered.
+  return { eligible: true, amount: facts.amountPaid, lastDayInWindow };
 }

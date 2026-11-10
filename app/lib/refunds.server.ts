@@ -103,18 +103,16 @@ function getSecondsWatched(userId: number, lessonIds: number[]) {
  */
 export function getRefundEligibility(
   userId: number,
-  course: { id: number; price: number },
+  courseId: number,
   now: Date = new Date()
 ) {
-  const purchase = getLatestPurchase(userId, course.id);
+  const purchase = getLatestPurchase(userId, courseId);
   if (!purchase) return null;
 
-  const lessonIds = getLessonIds(course.id);
+  const lessonIds = getLessonIds(courseId);
   const facts: RefundFacts = {
     purchasedAt: purchase.createdAt,
     amountPaid: purchase.amountPaid,
-    listPrice: course.price,
-    country: purchase.country,
     hasOpenRequest: hasOpenRefundRequest(purchase.id),
     isClaimedTeamSeat: isClaimedTeamSeat(purchase.id),
     lessonCount: lessonIds.length,
